@@ -1,0 +1,47 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+venv/
+env/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Next.js
+web/.next/
+web/out/
+
+# Python
+*.egg-info/
+dist/
+build/
+
+# Local uploader
+local-uploader/queue.db
+local-uploader/.uploader_state/
+
+# Google credentials
+credentials.json
+token.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Logs
+*.log
+logs/
+
+# Temp
+tmp/
+temp/
+uploads/

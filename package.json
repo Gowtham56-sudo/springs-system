@@ -1,0 +1,20 @@
+{
+  "name": "ai-wedding-photo-platform",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "web",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=web",
+    "build": "npm run build --workspace=web",
+    "start": "npm run start --workspace=web",
+    "seed": "npx tsx scripts/seed-test-wedding.ts"
+  },
+  "devDependencies": {
+    "@types/sharp": "^0.31.1",
+    "dotenv": "^16.4.7",
+    "tsx": "^4.19.2"
+  }
+}

@@ -1,0 +1,59 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ivory: #faf8f5;
+  --color-gold: #c9a962;
+  --color-gold-dark: #a88b4a;
+  --color-charcoal: #2c2c2c;
+  --color-rose: #d4a5a5;
+  --font-serif: "Georgia", "Times New Roman", serif;
+  --font-sans: "Segoe UI", system-ui, sans-serif;
+}
+
+body {
+  background-color: var(--color-ivory);
+  color: var(--color-charcoal);
+  font-family: var(--font-sans);
+}
+
+.font-serif {
+  font-family: var(--font-serif);
+}
+
+.font-script {
+  font-family: var(--font-script);
+}
+
+.gradient-gold {
+  background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
+}
+
+.card-shadow {
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #f0ebe3 25%, #e8e0d4 50%, #f0ebe3 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
