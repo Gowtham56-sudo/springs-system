@@ -2,6 +2,7 @@
 
 import logging
 import os
+import asyncio
 from contextlib import asynccontextmanager
 
 import httpx
@@ -77,7 +78,7 @@ async def process_photo(request: ProcessRequest):
         logger.error(f"Failed to download photo: {e}")
         raise HTTPException(status_code=502, detail="Failed to download photo")
 
-    faces = detect_faces(image_bytes)
+    faces = await asyncio.to_thread(detect_faces, image_bytes)
 
     return {
         "faces": faces,
@@ -97,7 +98,7 @@ async def process_upload(photo: UploadFile = File(...)):
     if len(image_bytes) == 0:
         raise HTTPException(status_code=400, detail="Empty file")
 
-    faces = detect_faces(image_bytes)
+    faces = await asyncio.to_thread(detect_faces, image_bytes)
 
     return {
         "faces": faces,
@@ -121,7 +122,7 @@ async def process_selfie_endpoint(selfie: UploadFile = File(...)):
             detail={"error": "Empty file", "code": "INVALID_IMAGE"},
         )
 
-    result = process_selfie(image_bytes)
+    result = await asyncio.to_thread(process_selfie, image_bytes)
 
     if "error" in result:
         status_codes = {

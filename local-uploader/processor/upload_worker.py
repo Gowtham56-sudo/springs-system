@@ -32,12 +32,14 @@ class UploadWorker:
         drive: DriveUploader,
         wedding_code: str,
         web_api_url: str,
+        ai_service_url: str,
         api_key: str,
     ):
         self.queue = queue
         self.drive = drive
         self.wedding_code = wedding_code
         self.web_api_url = web_api_url.rstrip("/")
+        self.ai_service_url = ai_service_url.rstrip("/")
         self.api_key = api_key
         self.watch_folder = ""
         self._running = False
@@ -131,6 +133,23 @@ class UploadWorker:
                     mime_type,
                     folders["originalsFolderId"],
                 )
+            
+            # Fetch embeddings from local AI service
+            self.queue.update_state(item_id, QueueState.UPLOADING, upload_progress=0.4)
+            faces = []
+            try:
+                ai_bytes = compressed_bytes if compressed_bytes else open(file_path, "rb").read()
+                async with httpx.AsyncClient(timeout=120.0) as client:
+                    files = {"photo": ("photo.jpg", ai_bytes, "image/jpeg")}
+                    ai_resp = await client.post(
+                        f"{self.ai_service_url}/api/ai/process-upload",
+                        files=files
+                    )
+                    ai_resp.raise_for_status()
+                    faces = ai_resp.json().get("faces", [])
+            except Exception as e:
+                logger.error(f"Failed to fetch embeddings from local AI service for {file_name}: {e}")
+
             self.queue.update_state(item_id, QueueState.UPLOADING, upload_progress=0.6)
 
             # Generate and upload thumbnail
@@ -164,6 +183,7 @@ class UploadWorker:
                         "thumbnailFileId": thumb_id,
                         "mimeType": mime_type,
                         "fileSize": file_size,
+                        "faces": faces,
                     },
                     headers={"x-uploader-api-key": self.api_key},
                 )
@@ -181,13 +201,10 @@ class UploadWorker:
             else:
                 self.queue.update_state(
                     item_id,
-                    QueueState.PROCESSING,
+                    QueueState.COMPLETED,
                     upload_progress=1.0,
                     photo_id=result.get("photoId"),
                 )
-                # Wait briefly for AI processing
-                await asyncio.sleep(2)
-                self.queue.update_state(item_id, QueueState.COMPLETED)
 
             logger.info(f"Completed: {file_name}")
             
@@ -203,7 +220,7 @@ class UploadWorker:
             return True
 
         except Exception as e:
-            logger.error(f"Upload failed for {file_name}: {e}")
+            logger.exception(f"Upload failed for {file_name}: {e}")
             
             # Reset connections to recover from stale socket or SSL errors
             self.drive.reset_connection()

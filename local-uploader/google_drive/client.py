@@ -18,6 +18,9 @@ class DriveUploader:
         self._token = None
 
     def _get_token(self) -> str:
+        if self._token:
+            return self._token
+            
         creds = Credentials(
             token=None,
             refresh_token=self.refresh_token,

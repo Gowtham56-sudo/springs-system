@@ -7,6 +7,10 @@ import subprocess
 import sys
 from contextlib import asynccontextmanager
 from pathlib import Path
+import socket
+
+# Set global socket timeout to prevent google.auth and other blocking calls from hanging forever
+socket.setdefaulttimeout(30.0)
 
 import httpx
 from dotenv import load_dotenv
@@ -50,12 +54,13 @@ if not WATCH_FOLDER:
     WATCH_FOLDER = selected_folder
 WEDDING_CODE = os.getenv("WEDDING_CODE", "WDG-TEST-001")
 WEB_API_URL = os.getenv("WEB_API_URL", "http://localhost:3000")
+AI_SERVICE_URL = os.getenv("AI_SERVICE_URL", "http://localhost:8001")
 UPLOADER_API_KEY = os.getenv("UPLOADER_API_KEY", "change-me-to-a-secure-random-string")
 UPLOADER_PORT = int(os.getenv("UPLOADER_PORT", "8002"))
 
 queue = UploadQueue(db_path=str(Path(__file__).parent / "queue.db"))
 drive = DriveUploader()
-worker = UploadWorker(queue, drive, WEDDING_CODE, WEB_API_URL, UPLOADER_API_KEY)
+worker = UploadWorker(queue, drive, WEDDING_CODE, WEB_API_URL, AI_SERVICE_URL, UPLOADER_API_KEY)
 worker.set_watch_folder(WATCH_FOLDER)
 watcher: FolderWatcher | None = None
 worker_task: asyncio.Task | None = None
@@ -131,11 +136,14 @@ async def status():
     if wedding_info.get("groomName") and wedding_info.get("brideName"):
         couple = f"{wedding_info['groomName']} ❤️ {wedding_info['brideName']}"
 
+    # Run is_connected in a thread because it makes a synchronous HTTP request
+    drive_connected = await asyncio.to_thread(drive.is_connected)
+
     return {
         "weddingCode": WEDDING_CODE,
         "couple": couple,
         "watchFolder": WATCH_FOLDER,
-        "driveConnected": drive.is_connected(),
+        "driveConnected": drive_connected,
         "paused": worker.is_paused,
         "stats": stats,
     }

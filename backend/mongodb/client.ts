@@ -18,7 +18,9 @@ export async function connectMongo(): Promise<Db> {
   await client.connect();
   db = client.db(database);
 
-  await ensureIndexes(db);
+  // Indexes should be created manually or via a separate migration script, 
+  // not on every serverless lambda cold start.
+  // await ensureIndexes(db);
   return db;
 }
 

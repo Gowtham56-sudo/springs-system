@@ -27,6 +27,7 @@ export async function POST(request: NextRequest) {
       thumbnailFileId,
       mimeType,
       fileSize,
+      faces,
     } = body;
 
     if (
@@ -60,19 +61,43 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Trigger async AI processing
-    processPhotoAsync(photo._id!.toString(), photo.weddingId.toString()).catch(
-      console.error
-    );
+    if (faces && Array.isArray(faces)) {
+      // Process embeddings directly provided by the uploader
+      const embeddings = faces.map((face: any) => ({
+        faceIndex: face.faceIndex,
+        embedding: face.embedding,
+      }));
 
-    return NextResponse.json(
-      {
-        photoId: photo._id!.toString(),
-        duplicate: false,
-        processingStatus: "uploaded",
-      },
-      { status: 201 }
-    );
+      await storeFaceEmbeddings(
+        photo.weddingId,
+        photo._id!,
+        embeddings
+      );
+      await updatePhotoStatus(photo._id!.toString(), "completed");
+
+      return NextResponse.json(
+        {
+          photoId: photo._id!.toString(),
+          duplicate: false,
+          processingStatus: "completed",
+        },
+        { status: 201 }
+      );
+    } else {
+      // Fallback: Trigger async AI processing
+      processPhotoAsync(photo._id!.toString(), photo.weddingId.toString()).catch(
+        console.error
+      );
+
+      return NextResponse.json(
+        {
+          photoId: photo._id!.toString(),
+          duplicate: false,
+          processingStatus: "uploaded",
+        },
+        { status: 201 }
+      );
+    }
   } catch (error) {
     console.error("Register photo error:", error);
     return NextResponse.json(

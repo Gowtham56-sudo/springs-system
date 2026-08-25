@@ -26,7 +26,6 @@ def validate_image(file_path: str) -> bool:
     try:
         with Image.open(file_path) as img:
             img.verify()
-        with Image.open(file_path) as img:
             return img.width > 0 and img.height > 0
     except Exception as e:
         logger.warning(f"Invalid image {file_path}: {e}")
