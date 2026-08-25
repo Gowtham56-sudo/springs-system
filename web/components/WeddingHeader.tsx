@@ -20,10 +20,14 @@ export default function WeddingHeader({
       <p className="font-script text-gold text-4xl md:text-5xl mb-4">
         Springs Photography
       </p>
-      <h1 className="font-serif text-2xl md:text-3xl text-charcoal mb-4 leading-relaxed italic">
-        "Two souls with but a single thought,<br/>
-        Two hearts that beat as one."
-      </h1>
+      <div className="mb-4">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img 
+          src="/madhu-karthi.jpeg" 
+          alt="Wedding Image" 
+          className="w-full max-w-md mx-auto rounded-lg shadow-md object-cover"
+        />
+      </div>
       <p className="text-charcoal/60 text-sm md:text-base">
         {new Date(eventDate).toLocaleDateString("en-IN", {
           day: "numeric",
