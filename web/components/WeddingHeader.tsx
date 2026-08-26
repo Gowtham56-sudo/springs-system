@@ -29,7 +29,7 @@ export default function WeddingHeader({
         />
       </div>
       <p className="text-charcoal/60 text-sm md:text-base">
-        {new Date(eventDate).toLocaleDateString("en-IN", {
+        {new Date().toLocaleDateString("en-IN", {
           day: "numeric",
           month: "long",
           year: "numeric",
